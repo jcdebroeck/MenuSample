@@ -91,16 +91,17 @@ namespace XmlMenus
                 XPathNavigator tagPath = xpMenuItem.SelectSingleNode (MenuTagPath);
                 
                 // Ignore a node that is not well defined
-                if ( null != tagName && null != tagPath )
+                if ( null != tagName && null != tagPath && tagPath.MoveToAttribute (MenuTagPathAttribute, "") )
                 {
                     string name = tagName.Value;
-                    string path = tagPath.GetAttribute (MenuTagPathAttribute, "");
+                    string path = tagPath.Value;
                     bool active = m_activePath.Equals (path);
 
                     // a menu item can only invoke a single sub-menu
                     XPathNavigator xpSubItems = xpMenuItem.SelectSingleNode (MenuTagSubmenu);
                     List<MenuNode> subMenu = ParseMenuItems (MenuItemTag, xpSubItems);
 
+                    active = active || ( subMenu.FindAll (x => x.Active).Count > 0 );
                     MenuNode node = new MenuNode () {
                         Name = name,
                         Path = path,

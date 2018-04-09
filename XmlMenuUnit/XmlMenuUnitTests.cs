@@ -22,15 +22,6 @@ namespace XmlMenuUnitTests
         public void ParseMenuExample1Success()
         {
             //Arrange
-            // This example menu xml taken directly from SchedAero Menu.txt provided.
-            // In the PDF describing the parsing it is used as the example in discussion.
-            // The discussion of the example is innacurate for the following reasons.
-            // 1. There is only one path that can be active by spec but the example output 
-            //    flags two different paths, /Requests/Quotes/CreateQuote.aspx and 
-            //    /Requests/OpenQuotes.aspx as ACTIVE.
-            // 2. The parameters for the example specificy the path /Requests/OpenQuotes.aspx
-            //    therefore flagging ...CreateQuote.aspx is an error.
-            //
             // This test covers just the basis that parsing happens successfully.
             string testXml = @"<menu>
 	            <item>
@@ -175,6 +166,33 @@ namespace XmlMenuUnitTests
         }
 
         [TestMethod]
+        public void MisnamedAttributeMenuItemParseIgnored()
+        {
+            //Arrange
+            string testXml = @"
+                <menu>
+	                <item>
+		                <displayName>Home</displayName>
+		                <path value='/Default.aspx'/>
+	                </item>
+	                <item>
+		                <displayName>Misnamed path</displayName>
+		                <path wrongvalue='/Default.aspx'/>
+	                </item>
+                </menu>";
+            XPathDocument testInput = CreateXmLDocument (testXml);
+
+            //Act
+            MenuParser menu = new MenuParser ("/Default.aspx");
+            bool result = menu.Parse (testInput);
+
+            //Assert
+            Assert.IsNotNull (menu);
+            Assert.IsTrue (result);
+            Assert.IsTrue ( 1 == menu.Items.Count );
+        }
+
+        [TestMethod]
         public void BlankMenuItemParseSuccess()
         {
             //Arrange
@@ -268,7 +286,7 @@ namespace XmlMenuUnitTests
         }
 
         [TestMethod]
-        public void ActiveMenuRootAndThreeDeepSuccess()
+        public void ActiveMenuRootSuccess()
         {
             //Arrange
             // To test for active paths in root and submenus
@@ -277,6 +295,55 @@ namespace XmlMenuUnitTests
 	                <item>
 		                <displayName>Home</displayName>
 		                <path value='/Default.aspx'/>
+	                </item>
+	                <item>
+		                <displayName>Trips</displayName>
+		                <path value='/Requests/Quotes/CreateQuote.aspx'/>
+		                <subMenu>
+			                <item superOverride='true'>
+				                <displayName>Scheduled Trips</displayName>
+				                <path value='/Requests/Trips/ScheduledTrips.aspx'/>
+			                </item>
+			                <item>
+				                <displayName>Open Quotes</displayName>
+				                <path value='/Requests/OpenQuotes.aspx'/>
+		                        <subMenu>
+			                        <item superOverride='true'>
+				                        <displayName>Scheduled Trips</displayName>
+				                        <path value='/Requests/Trips/ScheduledTrips.aspx'/>
+			                        </item>
+			                        <item>
+				                        <displayName>Open Quotes at leaf</displayName>
+		                                <path value='/NotDefault.aspx'/>
+			                        </item>
+		                        </subMenu>
+			                </item>
+		                </subMenu>
+	                </item>
+                </menu>";
+            XPathDocument testInput = CreateXmLDocument (testXml);
+
+            //Act
+            MenuParser menu = new MenuParser ("/Default.aspx");
+            bool result = menu.Parse (testInput);
+            List<MenuNode> found = menu.FindAll (x => true == x.Active);
+
+            //Assert
+            Assert.IsNotNull (menu);
+            Assert.IsTrue ( 1 == found.Count );
+            Assert.IsTrue ( found[0].Name.Equals ("Home") );
+        }
+
+        [TestMethod]
+        public void ActiveMenuThreeDeepSuccess()
+        {
+            //Arrange
+            // To test for active paths in root and submenus
+            string testXml = @"
+                <menu>
+	                <item>
+		                <displayName>Home</displayName>
+		                <path value='/NotDefault.aspx'/>
 	                </item>
 	                <item>
 		                <displayName>Trips</displayName>
@@ -312,8 +379,10 @@ namespace XmlMenuUnitTests
 
             //Assert
             Assert.IsNotNull (menu);
-            Assert.IsTrue ( 2 == found.Count );
-            Assert.IsTrue ( found[0].Name.Equals ("Home") && found[1].Name.Equals ("Open Quotes at leaf") );
+            Assert.IsTrue ( 3 == found.Count );
+            Assert.IsTrue ( found[0].Name.Equals ("Trips") );
+            Assert.IsTrue ( found[1].Name.Equals ("Open Quotes") );
+            Assert.IsTrue ( found[2].Name.Equals ("Open Quotes at leaf") );
         }
 
         [TestMethod]
