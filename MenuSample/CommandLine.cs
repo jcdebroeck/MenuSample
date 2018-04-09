@@ -37,8 +37,8 @@ namespace CommandLine
             foreach (string arg in m_args)
             {
                 Console.WriteLine (arg);
-                Console.WriteLine ("");
             }
+            Console.WriteLine ("");
         }
     }
 
