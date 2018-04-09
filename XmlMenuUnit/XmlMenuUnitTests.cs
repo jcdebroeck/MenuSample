@@ -104,6 +104,125 @@ namespace XmlMenuUnitTests
         }
 
         [TestMethod]
+        public void EmptySingleMenuItemParseFails()
+        {
+            //Arrange
+            string testXml = @"
+                <menu>
+	                <item>
+	                </item>
+                </menu>";
+            XPathDocument testInput = CreateXmLDocument (testXml);
+
+            //Act
+            MenuParser menu = new MenuParser ("/Default.aspx");
+            bool result = menu.Parse (testInput);
+
+            //Assert
+            Assert.IsNotNull (menu);
+            Assert.IsFalse (result);
+        }
+
+        [TestMethod]
+        public void EmptyMenuItemParseIgnored()
+        {
+            //Arrange
+            string testXml = @"
+                <menu>
+	                <item>
+		                <displayName>Home</displayName>
+		                <path value='/Default.aspx'/>
+	                </item>
+	                <item>
+	                </item>
+                </menu>";
+            XPathDocument testInput = CreateXmLDocument (testXml);
+
+            //Act
+            MenuParser menu = new MenuParser ("/Default.aspx");
+            bool result = menu.Parse (testInput);
+
+            //Assert
+            Assert.IsNotNull (menu);
+            Assert.IsTrue (result);
+            Assert.IsTrue ( 1 == menu.Items.Count );
+        }
+
+        [TestMethod]
+        public void IncompleteMenuItemParseIgnored()
+        {
+            //Arrange
+            string testXml = @"
+                <menu>
+	                <item>
+		                <displayName>Home</displayName>
+		                <path value='/Default.aspx'/>
+	                </item>
+	                <item>
+		                <displayName>Dud</displayName>
+	                </item>
+                </menu>";
+            XPathDocument testInput = CreateXmLDocument (testXml);
+
+            //Act
+            MenuParser menu = new MenuParser ("/Default.aspx");
+            bool result = menu.Parse (testInput);
+
+            //Assert
+            Assert.IsNotNull (menu);
+            Assert.IsTrue (result);
+            Assert.IsTrue ( 1 == menu.Items.Count );
+        }
+
+        [TestMethod]
+        public void BlankMenuItemParseSuccess()
+        {
+            //Arrange
+            string testXml = @"
+                <menu>
+	                <item>
+		                <displayName></displayName>
+		                <path value=''/>
+	                </item>
+                </menu>";
+            XPathDocument testInput = CreateXmLDocument (testXml);
+
+            //Act
+            MenuParser menu = new MenuParser ("/Default.aspx");
+            bool result = menu.Parse (testInput);
+
+            //Assert
+            Assert.IsNotNull (menu);
+            Assert.IsTrue (result);
+            Assert.IsTrue ( 1 == menu.Items.Count );
+        }
+
+        [TestMethod]
+        public void EmptySubMenuItemParseSuccess()
+        {
+            //Arrange
+            string testXml = @"
+                <menu>
+	                <item>
+		                <displayName>Home</displayName>
+		                <path value='/Default.aspx'/>
+        		        <subMenu>
+		                </subMenu>
+	                </item>
+                </menu>";
+            XPathDocument testInput = CreateXmLDocument (testXml);
+
+            //Act
+            MenuParser menu = new MenuParser ("/Default.aspx");
+            bool result = menu.Parse (testInput);
+
+            //Assert
+            Assert.IsNotNull (menu);
+            Assert.IsTrue (result);
+            Assert.IsTrue ( 1 == menu.Items.Count );
+        }
+
+        [TestMethod]
         public void SingleMenuParseSuccess()
         {
             //Arrange
@@ -294,7 +413,7 @@ namespace XmlMenuUnitTests
         }
 
         [TestMethod]
-        public void MenuNodeFindFails()
+        public void UndefinedMenuNodeFindFails()
         {
             //Arrange
             // Test the node's ability to find items in the submenu

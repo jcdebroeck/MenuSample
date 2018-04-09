@@ -87,22 +87,29 @@ namespace XmlMenus
             foreach ( XPathNavigator xpMenuItem in xpMenuItems)
             {
                 // a menu item can have only one name and path by definition
-                string name = xpMenuItem.SelectSingleNode (MenuTagName).Value;
-                string path = xpMenuItem.SelectSingleNode (MenuTagPath).GetAttribute (MenuTagPathAttribute, "");
-                bool active = m_activePath.Equals (path);
+                XPathNavigator tagName = xpMenuItem.SelectSingleNode (MenuTagName);
+                XPathNavigator tagPath = xpMenuItem.SelectSingleNode (MenuTagPath);
+                
+                // Ignore a node that is not well defined
+                if ( null != tagName && null != tagPath )
+                {
+                    string name = tagName.Value;
+                    string path = tagPath.GetAttribute (MenuTagPathAttribute, "");
+                    bool active = m_activePath.Equals (path);
 
-                // a menu item can only invoke a single sub-menu
-                XPathNavigator xpSubItems = xpMenuItem.SelectSingleNode (MenuTagSubmenu);
-                List<MenuNode> subMenu = ParseMenuItems (MenuItemTag, xpSubItems);
+                    // a menu item can only invoke a single sub-menu
+                    XPathNavigator xpSubItems = xpMenuItem.SelectSingleNode (MenuTagSubmenu);
+                    List<MenuNode> subMenu = ParseMenuItems (MenuItemTag, xpSubItems);
 
-                MenuNode node = new MenuNode () {
-                    Name = name,
-                    Path = path,
-                    Active = active,
-                    SubMenu = subMenu
-                };
+                    MenuNode node = new MenuNode () {
+                        Name = name,
+                        Path = path,
+                        Active = active,
+                        SubMenu = subMenu
+                    };
 
-                newMenu.Add (node);
+                    newMenu.Add (node);
+                }
             }
 
             // return the menu including its submenus in the tree
