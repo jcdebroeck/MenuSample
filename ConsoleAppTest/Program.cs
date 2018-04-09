@@ -15,6 +15,12 @@ namespace MenuSample
         {
             bool successfulParse = false;
             CommandParameters parameters = new CommandParameters (args);
+            if ( !parameters.Valid () )
+            {
+                Console.WriteLine ("Please provide a menu file path and optionally an active menu path.");
+                //Console.ReadKey ();
+                return;
+            }
 
             parameters.DumpToConsole ();
 
@@ -42,7 +48,7 @@ namespace MenuSample
                 }
             }
 
-            Console.ReadKey ();
+            //Console.ReadKey ();
         }
 
         static MenuParser ParseXmlMenuFile (string filePath, string activePath)

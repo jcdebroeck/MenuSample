@@ -11,11 +11,16 @@ namespace CommandLine
 
         private string [] m_args { get; set; }
 
+        public bool Valid()
+        {
+            return ( m_args.Length >= 1 );
+        }
+
         public string InputFilePath
         {
             get
             {
-                return m_args[0];
+                return ( m_args.Length > 0 ) ? m_args[0] : "";
             }
         }
 
@@ -23,7 +28,7 @@ namespace CommandLine
         {
             get
             {
-                return m_args[1];
+                return ( m_args.Length > 1 ) ? m_args[1] : "";
             }
         }
 
@@ -32,6 +37,7 @@ namespace CommandLine
             foreach (string arg in m_args)
             {
                 Console.WriteLine (arg);
+                Console.WriteLine ("");
             }
         }
     }
